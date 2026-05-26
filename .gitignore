@@ -1,0 +1,19 @@
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Diagramas temporales
+*.drawio
+*.tmp
+*.bak
+
+# Archivos comprimidos de entrega
+*.zip
+
