@@ -8,4 +8,5 @@ Artefactos generados:
 - Identificación de actores.
 - Casos de uso.
 - Historias de usuario.
+- Trazabilidad.
 - Documento de entrega académica.
