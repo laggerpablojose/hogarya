@@ -1,23 +1,22 @@
 package tuti.desi.hogarya.entidades;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -28,37 +27,48 @@ public class Factura {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El período facturado es obligatorio")
-    @Size(max = 20, message = "El período facturado no puede superar los 20 caracteres")
-    @Column(name = "periodo_facturado", nullable = false, length = 20)
-    private String periodoFacturado;
-
-    @NotNull(message = "La fecha de emisión es obligatoria")
-    @Column(name = "fecha_emision", nullable = false)
-    private LocalDate fechaEmision;
-
-    @NotNull(message = "La fecha de vencimiento es obligatoria")
-    @Column(name = "fecha_vencimiento", nullable = false)
-    private LocalDate fechaVencimiento;
-
-    @NotNull(message = "El importe es obligatorio")
-    @Positive(message = "El importe debe ser mayor a cero")
-    @Column(nullable = false)
-    private Double importe;
-
-    @NotNull(message = "El estado de la factura es obligatorio")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado_factura", nullable = false, length = 20)
-    private EstadoFactura estadoFactura = EstadoFactura.PENDIENTE;
-
     @NotNull(message = "El contrato es obligatorio")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "contrato_id", nullable = false)
     private Contrato contrato;
 
-    // Composición inversa: si se elimina la factura, se elimina el pago asociado.
-    @OneToOne(mappedBy = "factura", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private PagoFactura pagoFactura;
+    @NotBlank(message = "El concepto es obligatorio")
+    @Size(max = 150, message = "El concepto no puede superar los 150 caracteres")
+    @Column(nullable = false, length = 150)
+    private String concepto;
+
+    @NotNull(message = "La fecha de emisión es obligatoria")
+    @Column(nullable = false)
+    private LocalDate fechaEmision;
+
+    @NotNull(message = "La fecha de vencimiento es obligatoria")
+    @Column(nullable = false)
+    private LocalDate fechaVencimiento;
+
+    @NotNull(message = "El importe es obligatorio")
+    @Positive(message = "El importe debe ser positivo")
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal importe;
+
+    @NotNull(message = "El estado de la factura es obligatorio")
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private EstadoFactura estado = EstadoFactura.PENDIENTE;
+
+    @Column
+    private LocalDate fechaPago;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private MedioPago medioPago;
+
+    @Positive(message = "El importe pagado debe ser positivo")
+    @Column(precision = 12, scale = 2)
+    private BigDecimal importePagado;
+
+    @PositiveOrZero(message = "El interés pagado no puede ser negativo")
+    @Column(precision = 12, scale = 2)
+    private BigDecimal interesPagado;
 
     @Column(nullable = false)
     private Boolean eliminado = false;
@@ -74,12 +84,20 @@ public class Factura {
         this.id = id;
     }
 
-    public String getPeriodoFacturado() {
-        return periodoFacturado;
+    public Contrato getContrato() {
+        return contrato;
     }
 
-    public void setPeriodoFacturado(String periodoFacturado) {
-        this.periodoFacturado = periodoFacturado;
+    public void setContrato(Contrato contrato) {
+        this.contrato = contrato;
+    }
+
+    public String getConcepto() {
+        return concepto;
+    }
+
+    public void setConcepto(String concepto) {
+        this.concepto = concepto;
     }
 
     public LocalDate getFechaEmision() {
@@ -98,36 +116,52 @@ public class Factura {
         this.fechaVencimiento = fechaVencimiento;
     }
 
-    public Double getImporte() {
+    public BigDecimal getImporte() {
         return importe;
     }
 
-    public void setImporte(Double importe) {
+    public void setImporte(BigDecimal importe) {
         this.importe = importe;
     }
 
-    public EstadoFactura getEstadoFactura() {
-        return estadoFactura;
+    public EstadoFactura getEstado() {
+        return estado;
     }
 
-    public void setEstadoFactura(EstadoFactura estadoFactura) {
-        this.estadoFactura = estadoFactura;
+    public void setEstado(EstadoFactura estado) {
+        this.estado = estado;
     }
 
-    public Contrato getContrato() {
-        return contrato;
+    public LocalDate getFechaPago() {
+        return fechaPago;
     }
 
-    public void setContrato(Contrato contrato) {
-        this.contrato = contrato;
+    public void setFechaPago(LocalDate fechaPago) {
+        this.fechaPago = fechaPago;
     }
 
-    public PagoFactura getPagoFactura() {
-        return pagoFactura;
+    public MedioPago getMedioPago() {
+        return medioPago;
     }
 
-    public void setPagoFactura(PagoFactura pagoFactura) {
-        this.pagoFactura = pagoFactura;
+    public void setMedioPago(MedioPago medioPago) {
+        this.medioPago = medioPago;
+    }
+
+    public BigDecimal getImportePagado() {
+        return importePagado;
+    }
+
+    public void setImportePagado(BigDecimal importePagado) {
+        this.importePagado = importePagado;
+    }
+
+    public BigDecimal getInteresPagado() {
+        return interesPagado;
+    }
+
+    public void setInteresPagado(BigDecimal interesPagado) {
+        this.interesPagado = interesPagado;
     }
 
     public Boolean getEliminado() {

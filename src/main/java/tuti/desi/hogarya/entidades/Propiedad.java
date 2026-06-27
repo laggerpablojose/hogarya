@@ -1,16 +1,18 @@
 package tuti.desi.hogarya.entidades;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -25,14 +27,9 @@ public class Propiedad {
     private Long id;
 
     @NotBlank(message = "La dirección es obligatoria")
-    @Size(max = 200, message = "La dirección no puede superar los 200 caracteres")
-    @Column(nullable = false, length = 200)
+    @Size(max = 150, message = "La dirección no puede superar los 150 caracteres")
+    @Column(nullable = false, length = 150)
     private String direccion;
-
-    @NotBlank(message = "El barrio o zona es obligatorio")
-    @Size(max = 100, message = "El barrio/zona no puede superar los 100 caracteres")
-    @Column(name = "barrio_zona", nullable = false, length = 100)
-    private String barrioZona;
 
     @NotBlank(message = "La ciudad es obligatoria")
     @Size(max = 100, message = "La ciudad no puede superar los 100 caracteres")
@@ -45,36 +42,29 @@ public class Propiedad {
     private TipoPropiedad tipo;
 
     @NotNull(message = "La cantidad de ambientes es obligatoria")
-    @Positive(message = "La cantidad de ambientes debe ser mayor a cero")
-    @Column(name = "cantidad_ambientes", nullable = false)
-    private Integer cantidadAmbientes;
+    @Min(value = 1, message = "La cantidad de ambientes debe ser positiva")
+    @Column(nullable = false)
+    private Integer ambientes;
 
     @NotNull(message = "Los metros cuadrados son obligatorios")
-    @Positive(message = "Los metros cuadrados deben ser mayores a cero")
-    @Column(name = "metros_cuadrados", nullable = false)
-    private Double metrosCuadrados;
+    @Positive(message = "Los metros cuadrados deben ser positivos")
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal metrosCuadrados;
 
-    @Size(max = 1000, message = "La descripción no puede superar los 1000 caracteres")
-    @Column(length = 1000)
+    @NotBlank(message = "La descripción es obligatoria")
+    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
+    @Column(nullable = false, length = 500)
     private String descripcion;
-
-    @Size(max = 500, message = "Las comodidades no pueden superar los 500 caracteres")
-    @Column(length = 500)
-    private String comodidades;
-
-    @Size(max = 1000, message = "Las URLs de fotos no pueden superar los 1000 caracteres")
-    @Column(name = "fotos_urls", length = 1000)
-    private String fotosUrls;
 
     @NotNull(message = "El estado de la propiedad es obligatorio")
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_disponible", nullable = false, length = 20)
-    private EstadoPropiedad estadoDisponible = EstadoPropiedad.DISPONIBLE;
+    @Column(nullable = false, length = 30)
+    private EstadoPropiedad estado = EstadoPropiedad.DISPONIBLE;
 
     @NotNull(message = "El propietario es obligatorio")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "propietario_id", nullable = false)
-    private Propietario propietario;
+    @ManyToOne
+    @JoinColumn(name = "persona_propietario_id", nullable = false)
+    private Persona propietario;
 
     @Column(nullable = false)
     private Boolean eliminado = false;
@@ -98,14 +88,6 @@ public class Propiedad {
         this.direccion = direccion;
     }
 
-    public String getBarrioZona() {
-        return barrioZona;
-    }
-
-    public void setBarrioZona(String barrioZona) {
-        this.barrioZona = barrioZona;
-    }
-
     public String getCiudad() {
         return ciudad;
     }
@@ -122,19 +104,19 @@ public class Propiedad {
         this.tipo = tipo;
     }
 
-    public Integer getCantidadAmbientes() {
-        return cantidadAmbientes;
+    public Integer getAmbientes() {
+        return ambientes;
     }
 
-    public void setCantidadAmbientes(Integer cantidadAmbientes) {
-        this.cantidadAmbientes = cantidadAmbientes;
+    public void setAmbientes(Integer ambientes) {
+        this.ambientes = ambientes;
     }
 
-    public Double getMetrosCuadrados() {
+    public BigDecimal getMetrosCuadrados() {
         return metrosCuadrados;
     }
 
-    public void setMetrosCuadrados(Double metrosCuadrados) {
+    public void setMetrosCuadrados(BigDecimal metrosCuadrados) {
         this.metrosCuadrados = metrosCuadrados;
     }
 
@@ -146,35 +128,19 @@ public class Propiedad {
         this.descripcion = descripcion;
     }
 
-    public String getComodidades() {
-        return comodidades;
+    public EstadoPropiedad getEstado() {
+        return estado;
     }
 
-    public void setComodidades(String comodidades) {
-        this.comodidades = comodidades;
+    public void setEstado(EstadoPropiedad estado) {
+        this.estado = estado;
     }
 
-    public String getFotosUrls() {
-        return fotosUrls;
-    }
-
-    public void setFotosUrls(String fotosUrls) {
-        this.fotosUrls = fotosUrls;
-    }
-
-    public EstadoPropiedad getEstadoDisponible() {
-        return estadoDisponible;
-    }
-
-    public void setEstadoDisponible(EstadoPropiedad estadoDisponible) {
-        this.estadoDisponible = estadoDisponible;
-    }
-
-    public Propietario getPropietario() {
+    public Persona getPropietario() {
         return propietario;
     }
 
-    public void setPropietario(Propietario propietario) {
+    public void setPropietario(Persona propietario) {
         this.propietario = propietario;
     }
 
