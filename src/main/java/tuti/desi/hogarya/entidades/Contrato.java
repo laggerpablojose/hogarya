@@ -1,22 +1,20 @@
 package tuti.desi.hogarya.entidades;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -29,54 +27,44 @@ public class Contrato {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "La propiedad es obligatoria")
+    @ManyToOne
+    @JoinColumn(name = "propiedad_id", nullable = false)
+    private Propiedad propiedad;
+
+    @NotNull(message = "El inquilino es obligatorio")
+    @ManyToOne
+    @JoinColumn(name = "persona_inquilino_id", nullable = false)
+    private Persona inquilino;
+
     @NotNull(message = "La fecha de inicio es obligatoria")
-    @Column(name = "fecha_inicio", nullable = false)
+    @Column(nullable = false)
     private LocalDate fechaInicio;
 
-    @NotNull(message = "La fecha de fin es obligatoria")
-    @Column(name = "fecha_fin", nullable = false)
-    private LocalDate fechaFin;
+    @NotNull(message = "La duración en meses es obligatoria")
+    @Positive(message = "La duración debe ser positiva")
+    @Column(nullable = false)
+    private Integer duracionMeses;
 
     @NotNull(message = "El importe mensual es obligatorio")
-    @Positive(message = "El importe mensual debe ser mayor a cero")
-    @Column(name = "importe_mensual", nullable = false)
-    private Double importeMensual;
+    @Positive(message = "El importe mensual debe ser positivo")
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal importeMensual;
 
-    @NotNull(message = "El día de vencimiento mensual es obligatorio")
-    @Column(name = "dia_vencimiento_mensual", nullable = false)
-    private Integer diaVencimientoMensual;
+    @NotNull(message = "El día de vencimiento es obligatorio")
+    @Min(value = 1, message = "El día de vencimiento debe ser entre 1 y 31")
+    @Max(value = 31, message = "El día de vencimiento debe ser entre 1 y 31")
+    @Column(nullable = false)
+    private Integer diaVencimiento;
 
-    @Size(max = 1000, message = "La descripción no puede superar los 1000 caracteres")
-    @Column(length = 1000)
+    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
+    @Column(length = 500)
     private String descripcion;
 
     @NotNull(message = "El estado del contrato es obligatorio")
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_contrato", nullable = false, length = 20)
-    private EstadoContrato estadoContrato = EstadoContrato.BORRADOR;
-
-    @NotNull(message = "La propiedad es obligatoria")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "propiedad_id", nullable = false)
-    private Propiedad propiedad;
-
-    @NotNull(message = "El propietario es obligatorio")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "propietario_id", nullable = false)
-    private Propietario propietario;
-
-    @NotNull(message = "El inquilino es obligatorio")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inquilino_id", nullable = false)
-    private Inquilino inquilino;
-
-    // Composición: las facturas no tienen sentido de existencia sin el contrato.
-    @OneToMany(mappedBy = "contrato", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Factura> facturas = new ArrayList<>();
-
-    // Composición: los incidentes del contrato (0..* en el diagrama).
-    @OneToMany(mappedBy = "contrato", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Incidente> incidentes = new ArrayList<>();
+    @Column(nullable = false, length = 30)
+    private EstadoContrato estado = EstadoContrato.BORRADOR;
 
     @Column(nullable = false)
     private Boolean eliminado = false;
@@ -92,6 +80,22 @@ public class Contrato {
         this.id = id;
     }
 
+    public Propiedad getPropiedad() {
+        return propiedad;
+    }
+
+    public void setPropiedad(Propiedad propiedad) {
+        this.propiedad = propiedad;
+    }
+
+    public Persona getInquilino() {
+        return inquilino;
+    }
+
+    public void setInquilino(Persona inquilino) {
+        this.inquilino = inquilino;
+    }
+
     public LocalDate getFechaInicio() {
         return fechaInicio;
     }
@@ -100,28 +104,28 @@ public class Contrato {
         this.fechaInicio = fechaInicio;
     }
 
-    public LocalDate getFechaFin() {
-        return fechaFin;
+    public Integer getDuracionMeses() {
+        return duracionMeses;
     }
 
-    public void setFechaFin(LocalDate fechaFin) {
-        this.fechaFin = fechaFin;
+    public void setDuracionMeses(Integer duracionMeses) {
+        this.duracionMeses = duracionMeses;
     }
 
-    public Double getImporteMensual() {
+    public BigDecimal getImporteMensual() {
         return importeMensual;
     }
 
-    public void setImporteMensual(Double importeMensual) {
+    public void setImporteMensual(BigDecimal importeMensual) {
         this.importeMensual = importeMensual;
     }
 
-    public Integer getDiaVencimientoMensual() {
-        return diaVencimientoMensual;
+    public Integer getDiaVencimiento() {
+        return diaVencimiento;
     }
 
-    public void setDiaVencimientoMensual(Integer diaVencimientoMensual) {
-        this.diaVencimientoMensual = diaVencimientoMensual;
+    public void setDiaVencimiento(Integer diaVencimiento) {
+        this.diaVencimiento = diaVencimiento;
     }
 
     public String getDescripcion() {
@@ -132,52 +136,12 @@ public class Contrato {
         this.descripcion = descripcion;
     }
 
-    public EstadoContrato getEstadoContrato() {
-        return estadoContrato;
+    public EstadoContrato getEstado() {
+        return estado;
     }
 
-    public void setEstadoContrato(EstadoContrato estadoContrato) {
-        this.estadoContrato = estadoContrato;
-    }
-
-    public Propiedad getPropiedad() {
-        return propiedad;
-    }
-
-    public void setPropiedad(Propiedad propiedad) {
-        this.propiedad = propiedad;
-    }
-
-    public Propietario getPropietario() {
-        return propietario;
-    }
-
-    public void setPropietario(Propietario propietario) {
-        this.propietario = propietario;
-    }
-
-    public Inquilino getInquilino() {
-        return inquilino;
-    }
-
-    public void setInquilino(Inquilino inquilino) {
-        this.inquilino = inquilino;
-    }
-
-    public List<Factura> getFacturas() {
-        return facturas;
-    }
-
-    public void setFacturas(List<Factura> facturas) {
-        this.facturas = facturas;
-    }
-
-    public List<Incidente> getIncidentes() {
-        return incidentes;
-    }
-
-    public void setIncidentes(List<Incidente> incidentes) {
-        this.incidentes = incidentes;
+    public void setEstado(EstadoContrato estado) {
+        this.estado = estado;
     }
 
     public Boolean getEliminado() {
