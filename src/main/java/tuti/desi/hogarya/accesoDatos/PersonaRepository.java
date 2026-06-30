@@ -1,4 +1,4 @@
-package tuti.desi.hogarya.repositorios;
+package tuti.desi.hogarya.accesoDatos;
 
 import java.util.List;
 

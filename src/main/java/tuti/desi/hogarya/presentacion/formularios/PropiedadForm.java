@@ -1,45 +1,48 @@
-package tuti.desi.hogarya.dtos;
+package tuti.desi.hogarya.presentacion.formularios;
 
 import java.math.BigDecimal;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import tuti.desi.hogarya.entidades.EstadoPropiedad;
-import tuti.desi.hogarya.entidades.Propiedad;
 import tuti.desi.hogarya.entidades.TipoPropiedad;
 
-/**
- * DTO de salida. Expone los datos de la Propiedad junto con un resumen
- * del propietario, sin devolver la entidad Persona completa.
- */
-public class PropiedadResponseDTO {
+public class PropiedadForm {
 
     private Long id;
+
+    @NotBlank(message = "La dirección es obligatoria")
+    @Size(max = 150, message = "La dirección no puede superar los 150 caracteres")
     private String direccion;
+
+    @NotBlank(message = "La ciudad es obligatoria")
+    @Size(max = 100, message = "La ciudad no puede superar los 100 caracteres")
     private String ciudad;
+
+    @NotNull(message = "El tipo de propiedad es obligatorio")
     private TipoPropiedad tipo;
+
+    @NotNull(message = "La cantidad de ambientes es obligatoria")
+    @Min(value = 1, message = "La cantidad de ambientes debe ser un número entero positivo")
     private Integer ambientes;
+
+    @NotNull(message = "Los metros cuadrados son obligatorios")
+    @Positive(message = "Los metros cuadrados deben ser un número positivo")
     private BigDecimal metrosCuadrados;
+
+    @NotBlank(message = "La descripción es obligatoria")
+    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
     private String descripcion;
+
     private EstadoPropiedad estado;
+
+    @NotNull(message = "El propietario es obligatorio")
     private Long propietarioId;
-    private String propietarioNombreCompleto;
 
-    public PropiedadResponseDTO() {
-    }
-
-    public PropiedadResponseDTO(Propiedad propiedad) {
-        this.id = propiedad.getId();
-        this.direccion = propiedad.getDireccion();
-        this.ciudad = propiedad.getCiudad();
-        this.tipo = propiedad.getTipo();
-        this.ambientes = propiedad.getAmbientes();
-        this.metrosCuadrados = propiedad.getMetrosCuadrados();
-        this.descripcion = propiedad.getDescripcion();
-        this.estado = propiedad.getEstado();
-        if (propiedad.getPropietario() != null) {
-            this.propietarioId = propiedad.getPropietario().getId();
-            this.propietarioNombreCompleto = propiedad.getPropietario().getNombre()
-                    + " " + propiedad.getPropietario().getApellido();
-        }
+    public PropiedadForm() {
     }
 
     public Long getId() {
@@ -112,13 +115,5 @@ public class PropiedadResponseDTO {
 
     public void setPropietarioId(Long propietarioId) {
         this.propietarioId = propietarioId;
-    }
-
-    public String getPropietarioNombreCompleto() {
-        return propietarioNombreCompleto;
-    }
-
-    public void setPropietarioNombreCompleto(String propietarioNombreCompleto) {
-        this.propietarioNombreCompleto = propietarioNombreCompleto;
     }
 }
