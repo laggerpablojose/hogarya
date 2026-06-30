@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Facturas</title>
+</head>
+<body>
+
+    <h1>Facturas</h1>
+
+    <div th:if="${mensaje}">
+        <p th:text="${mensaje}"></p>
+    </div>
+
+    <div th:if="${error}">
+        <p th:text="${error}"></p>
+    </div>
+
+    <p>
+        <a th:href="@{/facturas/nueva}">Nueva factura</a>
+    </p>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Contrato</th>
+                <th>Concepto</th>
+                <th>Fecha emisión</th>
+                <th>Fecha vencimiento</th>
+                <th>Importe</th>
+                <th>Estado</th>
+                <th>Fecha pago</th>
+                <th>Medio pago</th>
+                <th>Importe pagado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="factura : ${facturas}">
+                <td th:text="${factura.id}">1</td>
+                <td th:text="${factura.contrato != null ? factura.contrato.id : '-'}">1</td>
+                <td th:text="${factura.concepto}">Alquiler mensual</td>
+                <td th:text="${factura.fechaEmision}">2026-06-01</td>
+                <td th:text="${factura.fechaVencimiento}">2026-06-10</td>
+                <td th:text="${factura.importe}">100000.00</td>
+                <td th:text="${factura.estado}">PENDIENTE</td>
+                <td th:text="${factura.fechaPago != null ? factura.fechaPago : '-'}">-</td>
+                <td th:text="${factura.medioPago != null ? factura.medioPago : '-'}">-</td>
+                <td th:text="${factura.importePagado != null ? factura.importePagado : '-'}">-</td>
+                <td>
+                    <a th:href="@{/facturas/{id}/editar(id=${factura.id})}">Editar</a>
+
+                    <a th:href="@{/facturas/{id}/pagar(id=${factura.id})}">Pagar</a>
+
+                    <form th:action="@{/facturas/{id}/anular(id=${factura.id})}" method="post" style="display:inline;">
+                        <button type="submit">Anular</button>
+                    </form>
+
+                    <form th:action="@{/facturas/{id}/eliminar(id=${factura.id})}" method="post" style="display:inline;">
+                        <button type="submit">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr th:if="${facturas == null or #lists.isEmpty(facturas)}">
+                <td colspan="11">No hay facturas registradas.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
