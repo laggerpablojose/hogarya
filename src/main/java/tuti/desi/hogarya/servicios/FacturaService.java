@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 
 import tuti.desi.hogarya.accesoDatos.ContratoRepository;
 import tuti.desi.hogarya.accesoDatos.FacturaRepository;
+import tuti.desi.hogarya.accesoDatos.HistorialEstadoFacturaRepository;
 import tuti.desi.hogarya.entidades.Contrato;
 import tuti.desi.hogarya.entidades.EstadoContrato;
 import tuti.desi.hogarya.entidades.EstadoFactura;
 import tuti.desi.hogarya.entidades.Factura;
+import tuti.desi.hogarya.entidades.HistorialEstadoFactura;
 import tuti.desi.hogarya.excepciones.NegocioException;
 import tuti.desi.hogarya.presentacion.formularios.FacturaForm;
 
@@ -23,6 +25,9 @@ public class FacturaService {
 
     @Autowired
     private ContratoRepository contratoRepository;
+
+    @Autowired
+    private HistorialEstadoFacturaRepository historialEstadoFacturaRepository;
 
     public List<Factura> listarFacturas() {
         return facturaRepository.findByEliminadoFalse();
@@ -66,7 +71,16 @@ public class FacturaService {
         factura.setEliminado(false);
         limpiarDatosPago(factura);
 
-        return facturaRepository.save(factura);
+        Factura facturaGuardada = facturaRepository.save(factura);
+
+        registrarHistorial(
+                facturaGuardada,
+                null,
+                EstadoFactura.PENDIENTE,
+                "Creación inicial de factura en estado pendiente."
+        );
+
+        return facturaGuardada;
     }
 
     public Factura modificarFactura(Long id, FacturaForm form) {
@@ -80,7 +94,9 @@ public class FacturaService {
         validarFechas(form);
         validarImporte(form.getImporte());
 
+        EstadoFactura estadoAnterior = factura.getEstado();
         EstadoFactura nuevoEstado = form.getEstado();
+
         if (nuevoEstado == null) {
             nuevoEstado = factura.getEstado();
         }
@@ -107,7 +123,18 @@ public class FacturaService {
             limpiarDatosPago(factura);
         }
 
-        return facturaRepository.save(factura);
+        Factura facturaGuardada = facturaRepository.save(factura);
+
+        if (estadoAnterior != nuevoEstado) {
+            registrarHistorial(
+                    facturaGuardada,
+                    estadoAnterior,
+                    nuevoEstado,
+                    "Cambio de estado registrado durante la modificación de la factura."
+            );
+        }
+
+        return facturaGuardada;
     }
 
     public void eliminarFactura(Long id) {
@@ -117,8 +144,33 @@ public class FacturaService {
             throw new NegocioException("No se puede eliminar una factura pagada.");
         }
 
+        EstadoFactura estadoAnterior = factura.getEstado();
+
         factura.setEliminado(true);
-        facturaRepository.save(factura);
+
+        if (factura.getEstado() != EstadoFactura.ANULADA) {
+            factura.setEstado(EstadoFactura.ANULADA);
+        }
+
+        limpiarDatosPago(factura);
+
+        Factura facturaGuardada = facturaRepository.save(factura);
+
+        if (estadoAnterior != facturaGuardada.getEstado()) {
+            registrarHistorial(
+                    facturaGuardada,
+                    estadoAnterior,
+                    facturaGuardada.getEstado(),
+                    "Eliminación lógica de la factura. La factura se marcó como eliminada y su estado pasó a anulada."
+            );
+        } else {
+            registrarHistorial(
+                    facturaGuardada,
+                    estadoAnterior,
+                    facturaGuardada.getEstado(),
+                    "Eliminación lógica de la factura sin cambio de estado porque ya se encontraba anulada."
+            );
+        }
     }
 
     public void marcarComoPagada(Long id, FacturaForm form) {
@@ -127,13 +179,24 @@ public class FacturaService {
         validarFacturaModificable(factura);
         validarDatosPagoCompletos(form);
 
+        EstadoFactura estadoAnterior = factura.getEstado();
+
         factura.setEstado(EstadoFactura.PAGADA);
         factura.setFechaPago(form.getFechaPago());
         factura.setMedioPago(form.getMedioPago());
         factura.setImportePagado(form.getImportePagado());
         factura.setInteresPagado(form.getInteresPagado());
 
-        facturaRepository.save(factura);
+        Factura facturaGuardada = facturaRepository.save(factura);
+
+        if (estadoAnterior != EstadoFactura.PAGADA) {
+            registrarHistorial(
+                    facturaGuardada,
+                    estadoAnterior,
+                    EstadoFactura.PAGADA,
+                    "Factura marcada como pagada."
+            );
+        }
     }
 
     public void anularFactura(Long id) {
@@ -143,10 +206,21 @@ public class FacturaService {
             throw new NegocioException("No se puede anular una factura pagada.");
         }
 
+        EstadoFactura estadoAnterior = factura.getEstado();
+
         factura.setEstado(EstadoFactura.ANULADA);
         limpiarDatosPago(factura);
 
-        facturaRepository.save(factura);
+        Factura facturaGuardada = facturaRepository.save(factura);
+
+        if (estadoAnterior != EstadoFactura.ANULADA) {
+            registrarHistorial(
+                    facturaGuardada,
+                    estadoAnterior,
+                    EstadoFactura.ANULADA,
+                    "Factura anulada."
+            );
+        }
     }
 
     public List<Contrato> listarContratosActivos() {
@@ -258,5 +332,17 @@ public class FacturaService {
         factura.setMedioPago(null);
         factura.setImportePagado(null);
         factura.setInteresPagado(null);
+    }
+
+    private void registrarHistorial(Factura factura, EstadoFactura estadoAnterior, EstadoFactura estadoNuevo,
+            String observacion) {
+        HistorialEstadoFactura historial = new HistorialEstadoFactura(
+                factura,
+                estadoAnterior,
+                estadoNuevo,
+                observacion
+        );
+
+        historialEstadoFacturaRepository.save(historial);
     }
 }
