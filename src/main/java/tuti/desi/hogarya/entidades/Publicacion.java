@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "publicaciones")
@@ -33,6 +34,13 @@ public class Publicacion {
     @Size(max = 1000, message = "Las condiciones no pueden superar los 1000 caracteres")
     @Column(length = 1000)
     private String condiciones;
+    
+
+    @NotBlank(message = "La descripcion es obligatoria")
+    @Size(max = 1000, message = "La descripcion no puede superar los 1000 caracteres")
+    @Column(nullable = false, length = 1000)
+    private String descripcion;
+
 
     @NotNull(message = "La fecha de publicación es obligatoria")
     @Column(name = "fecha_publicacion", nullable = false)
@@ -77,6 +85,16 @@ public class Publicacion {
     public void setCondiciones(String condiciones) {
         this.condiciones = condiciones;
     }
+    
+
+    public String getDescripcion() {
+    	return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+    	this.descripcion = descripcion;
+    }
+
 
     public LocalDate getFechaPublicacion() {
         return fechaPublicacion;

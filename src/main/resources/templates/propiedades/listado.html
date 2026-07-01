@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Propiedades</title>
+</head>
+<body>
+
+    <h1>Propiedades</h1>
+
+    <div th:if="${mensaje}">
+        <p th:text="${mensaje}"></p>
+    </div>
+
+    <div th:if="${error}">
+        <p th:text="${error}"></p>
+    </div>
+
+    <p>
+        <a th:href="@{/propiedades/nueva}">Nueva propiedad</a>
+    </p>
+
+    <!-- Filtros (HU 1.4) -->
+    <form th:action="@{/propiedades}" method="get">
+        <label>Dirección:
+            <input type="text" name="direccion" th:value="${filtroDireccion}">
+        </label>
+        <label>Ciudad:
+            <input type="text" name="ciudad" th:value="${filtroCiudad}">
+        </label>
+        <label>Tipo:
+            <select name="tipo">
+                <option value="">Todos</option>
+                <option th:each="t : ${tiposPropiedad}"
+                        th:value="${t}"
+                        th:text="${t}"
+                        th:selected="${t == filtroTipo}"></option>
+            </select>
+        </label>
+        <label>Estado:
+            <select name="estado">
+                <option value="">Todos</option>
+                <option th:each="e : ${estadosPropiedad}"
+                        th:value="${e}"
+                        th:text="${e}"
+                        th:selected="${e == filtroEstado}"></option>
+            </select>
+        </label>
+        <button type="submit">Filtrar</button>
+        <a th:href="@{/propiedades}">Limpiar filtros</a>
+    </form>
+
+    <!-- Tabla de resultados (HU 1.4) -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Dirección</th>
+                <th>Ciudad</th>
+                <th>Tipo</th>
+                <th>Ambientes</th>
+                <th>Metros cuadrados</th>
+                <th>Estado</th>
+                <th>Propietario</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="propiedad : ${propiedades}">
+                <td th:text="${propiedad.id}"></td>
+                <td th:text="${propiedad.direccion}"></td>
+                <td th:text="${propiedad.ciudad}"></td>
+                <td th:text="${propiedad.tipo}"></td>
+                <td th:text="${propiedad.ambientes}"></td>
+                <td th:text="${propiedad.metrosCuadrados}"></td>
+                <td th:text="${propiedad.estado}"></td>
+                <td th:text="${propiedad.propietario != null ?
+                    propiedad.propietario.nombre + ' ' + propiedad.propietario.apellido : '-'}"></td>
+                <td>
+                    <a th:href="@{/propiedades/{id}/editar(id=${propiedad.id})}">Editar</a>
+
+                    <form th:action="@{/propiedades/{id}/eliminar(id=${propiedad.id})}"
+                          method="post" style="display:inline;">
+                        <button type="submit"
+                                onclick="return confirm('¿Confirma eliminar esta propiedad?')">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr th:if="${propiedades == null or #lists.isEmpty(propiedades)}">
+                <td colspan="9">No hay propiedades registradas.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
