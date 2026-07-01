@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de factura</title>
+</head>
+<body>
+
+    <h1 th:text="${facturaForm.id == null ? 'Nueva factura' : 'Editar factura'}">Formulario de factura</h1>
+
+    <div th:if="${error}">
+        <p th:text="${error}"></p>
+    </div>
+
+    <form th:object="${facturaForm}"
+          th:action="${facturaForm.id == null} ? @{/facturas/nueva} : @{/facturas/{id}/editar(id=${facturaForm.id})}"
+          method="post">
+
+        <input type="hidden" th:field="*{id}">
+
+        <div>
+            <label for="contratoId">Contrato</label>
+            <select id="contratoId" th:field="*{contratoId}">
+                <option value="">Seleccione un contrato</option>
+                <option th:each="contrato : ${contratos}"
+                        th:value="${contrato.id}"
+                        th:text="|Contrato #${contrato.id}|">
+                    Contrato #1
+                </option>
+            </select>
+            <div th:if="${#fields.hasErrors('contratoId')}">
+                <span th:errors="*{contratoId}">Error contrato</span>
+            </div>
+        </div>
+
+        <div>
+            <label for="concepto">Concepto</label>
+            <input type="text" id="concepto" th:field="*{concepto}">
+            <div th:if="${#fields.hasErrors('concepto')}">
+                <span th:errors="*{concepto}">Error concepto</span>
+            </div>
+        </div>
+
+        <div>
+            <label for="fechaEmision">Fecha de emisión</label>
+            <input type="date" id="fechaEmision" th:field="*{fechaEmision}">
+            <div th:if="${#fields.hasErrors('fechaEmision')}">
+                <span th:errors="*{fechaEmision}">Error fecha emisión</span>
+            </div>
+        </div>
+
+        <div>
+            <label for="fechaVencimiento">Fecha de vencimiento</label>
+            <input type="date" id="fechaVencimiento" th:field="*{fechaVencimiento}">
+            <div th:if="${#fields.hasErrors('fechaVencimiento')}">
+                <span th:errors="*{fechaVencimiento}">Error fecha vencimiento</span>
+            </div>
+        </div>
+
+        <div>
+            <label for="importe">Importe</label>
+            <input type="number" id="importe" th:field="*{importe}" step="0.01" min="0">
+            <div th:if="${#fields.hasErrors('importe')}">
+                <span th:errors="*{importe}">Error importe</span>
+            </div>
+        </div>
+
+        <div>
+            <button type="submit">Guardar</button>
+            <a th:href="@{/facturas}">Volver</a>
+        </div>
+
+    </form>
+
+</body>
+</html>
