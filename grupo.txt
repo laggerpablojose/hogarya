@@ -1,0 +1,21 @@
+Grupo: Lezcano Bocchieri Rossi Lagger
+
+Integrantes:
+- Lezcano Claudio - cdlezcano@frsf.utn.edu.ar
+- Bocchieri Matías - mbocchieri@frsf.utn.edu.ar
+- Rossi Marcos - mrossiameduri@frsf.utn.edu.ar
+- Lagger Pablo José - plagger@frsf.utn.edu.ar
+
+Proyecto:
+HogarYA - TP Integrador Actividad 03
+Materia: Desarrollo de Sistemas de Información - UTN FRSF
+
+Repositorio:
+https://github.com/laggerpablojose/hogarya
+
+Branch a corregir:
+release/actividad-03
+
+Observación:
+La entrega se organiza sobre la arquitectura Spring MVC + Thymeleaf acordada por el grupo:
+Navegador -> Controller -> Service -> Repository -> Entity -> Base de datos.
