@@ -1,7 +1,6 @@
-package tuti.desi.hogarya.repositorios;
+package tuti.desi.hogarya.accesoDatos;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,23 +21,22 @@ public interface PublicacionRepository extends JpaRepository<Publicacion, Long> 
 
     List<Publicacion> findByPropiedad_CiudadIgnoreCaseAndEliminadoFalse(String ciudad);
 
-    Optional<Publicacion> findByPropiedad_IdAndEstadoPublicacionAndEliminadoFalse(Long propiedadId,
-            EstadoPublicacion estadoPublicacion);
+    List<Publicacion> findByPropiedad_IdAndEstadoPublicacionAndEliminadoFalse(
+            Long propiedadId,
+            EstadoPublicacion estadoPublicacion
+    );
 
     @Query("""
-            SELECT p FROM Publicacion p
+            SELECT p
+            FROM Publicacion p
             WHERE p.eliminado = false
+              AND (:estadoPublicacion IS NULL OR p.estadoPublicacion = :estadoPublicacion)
               AND (:propiedadId IS NULL OR p.propiedad.id = :propiedadId)
-              AND (:ciudad IS NULL OR LOWER(p.propiedad.ciudad) = LOWER(:ciudad))
-              AND (:estado IS NULL OR p.estadoPublicacion = :estado)
-              AND (:precioMin IS NULL OR p.precioMensualAlquiler >= :precioMin)
-              AND (:precioMax IS NULL OR p.precioMensualAlquiler <= :precioMax)
-            ORDER BY p.id DESC
+              AND (:ciudad IS NULL OR LOWER(p.propiedad.ciudad) LIKE LOWER(CONCAT('%', :ciudad, '%')))
             """)
     List<Publicacion> buscarConFiltros(
+            @Param("estadoPublicacion") EstadoPublicacion estadoPublicacion,
             @Param("propiedadId") Long propiedadId,
-            @Param("ciudad") String ciudad,
-            @Param("estado") EstadoPublicacion estado,
-            @Param("precioMin") Double precioMin,
-            @Param("precioMax") Double precioMax);
+            @Param("ciudad") String ciudad
+    );
 }
