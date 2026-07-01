@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Publicaciones</title>
+</head>
+<body>
+
+<h1>Publicaciones</h1>
+
+<div th:if="${mensaje}">
+    <p th:text="${mensaje}"></p>
+</div>
+
+<div th:if="${error}">
+    <p th:text="${error}"></p>
+</div>
+
+<p>
+    <a th:href="@{/publicaciones/nueva}">Nueva publicación</a>
+</p>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Propiedad</th>
+            <th>Ciudad</th>
+            <th>Precio mensual</th>
+            <th>Condiciones</th>
+            <th>Descripción</th>
+            <th>Fecha publicación</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:if="${#lists.isEmpty(publicaciones)}">
+            <td colspan="9">No hay publicaciones registradas.</td>
+        </tr>
+
+        <tr th:each="publicacion : ${publicaciones}">
+            <td th:text="${publicacion.id}">1</td>
+
+            <td th:text="${publicacion.propiedad != null ? publicacion.propiedad.direccion : '-'}">
+                Dirección
+            </td>
+
+            <td th:text="${publicacion.propiedad != null ? publicacion.propiedad.ciudad : '-'}">
+                Ciudad
+            </td>
+
+            <td th:text="${publicacion.precioMensualAlquiler}">
+                100000
+            </td>
+
+            <td th:text="${publicacion.condiciones}">
+                Condiciones
+            </td>
+
+            <td th:text="${publicacion.descripcion}">
+                Descripción
+            </td>
+
+            <td th:text="${publicacion.fechaPublicacion}">
+                2026-07-01
+            </td>
+
+            <td th:text="${publicacion.estadoPublicacion}">
+                ACTIVA
+            </td>
+
+            <td>
+                <a th:href="@{/publicaciones/{id}/editar(id=${publicacion.id})}">
+                    Editar
+                </a>
+
+                <form th:action="@{/publicaciones/{id}/eliminar(id=${publicacion.id})}"
+                      method="post"
+                      style="display:inline;">
+                    <button type="submit">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>
+    <a th:href="@{/}">Volver al inicio</a>
+</p>
+
+</body>
+</html>
