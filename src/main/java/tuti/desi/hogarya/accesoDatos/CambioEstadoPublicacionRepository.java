@@ -1,4 +1,4 @@
-package tuti.desi.hogarya.repositorios;
+package tuti.desi.hogarya.accesoDatos;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
