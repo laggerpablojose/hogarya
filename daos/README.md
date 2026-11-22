@@ -1,4 +1,5 @@
 # HogarYA API del integrador DAOS
 
-Directorio de la API REST de facturas, pagos, incidentes e informes de resolución.
-La arquitectura utiliza presentación REST, servicios y repositorios con MySQL.
+Base REST con Java 21, Spring Boot y Maven Wrapper.
+Importar el pom.xml de daos como Existing Maven Projects en Eclipse STS.
+La aplicación usa el puerto 8081 y publica la documentación en /v3/api-docs.
