@@ -1,6 +1,8 @@
 # HogarYA · Integrador DAOS 2026
 
-Guía de trabajo para la Actividad 02. El equipo implementará **una API REST en Java con los cuatro módulos integrados y un esquema MySQL compartido**. El objetivo del grupo es tener lista la entrega el **viernes 20/11/2026**. Moodle publica el cierre el **domingo 29/11/2026 a las 23:59** y da prioridad de corrección y coloquio a las entregas anticipadas. [Enunciado de la Actividad 02](https://tuti.sied.utn.edu.ar/mod/resource/view.php?id=7160) · [Entrega en Moodle](https://tuti.sied.utn.edu.ar/mod/assign/view.php?id=7163)
+El integrador se entrega el **domingo 29/11/2026 a las 23:59**. El equipo implementará una API REST integrada con cuatro módulos y un esquema MySQL compartido. **Pablo desarrolla S03 Incidentes**, confirmado el 22/11. El plan actual distribuye su trabajo en ocho jornadas del 22 al 29. [Enunciado de la Actividad 02](https://tuti.sied.utn.edu.ar/mod/resource/view.php?id=7160) · [Entrega en Moodle](https://tuti.sied.utn.edu.ar/mod/assign/view.php?id=7163)
+
+La jornada 1 incorpora una aplicación Spring Boot ejecutable, su punto de entrada JSON con HATEOAS y la documentación OpenAPI. Para comenzar, seguir [la guía del día 1](docs/GUIA-DIA-01.md). Las jornadas siguientes están en [el plan diario](docs/PLAN.md), y los acuerdos y resultados se conservan en [el registro de decisiones](docs/DECISIONES.md). [AGENTS.md](../AGENTS.md) contiene las reglas para continuar con agentes.
 
 ## Fuentes y alcance
 
@@ -10,9 +12,9 @@ Guía de trabajo para la Actividad 02. El equipo implementará **una API REST en
 
 ## Organización del repositorio
 
-HogarYA ya está registrado como repositorio del grupo en Moodle. La rama local de integración es `daos/integrador-2026`. La carpeta `daos/` es la ubicación propuesta para un único proyecto Maven importable en STS, con su `pom.xml`, código, Wrapper, scripts y pruebas reproducibles. Hoy contiene la guía. La raíz del repositorio sigue siendo la referencia DESI. Cada integrante trabajará en una rama `daos/s01-…` a `daos/s04-…` a partir de la base común y abrirá un PR hacia la rama de integración. [Registro del repositorio](https://tuti.sied.utn.edu.ar/mod/assign/view.php?id=7505)
+HogarYA ya está registrado como repositorio del grupo en Moodle. La rama de integración es `daos/integrador-2026`. El proyecto Maven de esta etapa está en `daos/`. Las PR diarias de Pablo apuntan a la rama de integración y usan ramas `daos/dia-NN-descripcion`. La copia local del Escritorio usa sparse checkout para mostrar `daos/`, `AGENTS.md` y los archivos de Git necesarios. Git conserva el historial para consultar DESI. [Registro del repositorio](https://tuti.sied.utn.edu.ar/mod/assign/view.php?id=7505)
 
-Para el esquema MySQL, el proyecto y el ZIP se propone la base de nombre `02-BocchieriDiazLaggerDiaz`, siguiendo el ZIP de la Actividad 01. Usar un esquema DAOS independiente del de DESI para poder ajustar el modelo y reproducir pruebas desde cero. Confirmar el nombre con el equipo antes de crear la configuración compartida. Pasar la URL y las credenciales por configuración local, con valores de ejemplo en las instrucciones.
+El proyecto se llama `02-BocchieriDiazLaggerDiaz`, siguiendo el ZIP de la Actividad 01. Se usará el mismo nombre para el esquema MySQL y el ZIP. La persistencia y su configuración local se incorporan en la jornada 2. El punto de entrada de la jornada 1 funciona en el puerto `8081`.
 
 ## Herramientas
 
@@ -22,7 +24,7 @@ Para el esquema MySQL, el proyecto y el ZIP se propone la base de nombre `02-Boc
 | Maven | Funcionó `.\mvnw.cmd -v` en ambos proyectos. El Wrapper de DESI usa **3.9.16** y el docente **3.10.0**. El comando global `mvn` no está disponible y `MAVEN_HOME` apunta a una ruta sin ejecutable. Usar el Wrapper desde la carpeta del proyecto. [Apache Maven Wrapper](https://maven.apache.org/tools/wrapper/) |
 | Eclipse STS | Ejecutable de **Spring Tools for Eclipse 5.1.1** localizado. Queda por comprobar la importación del futuro proyecto `daos/` con **Existing Maven Projects** y JDK 21. [Spring Tools](https://spring.io/tools/) |
 | Spring Initializr | El sitio y su servicio de metadatos están disponibles. Se usa para generar la base cuando haga falta. Para trabajar con un proyecto Maven existente se importa su `pom.xml`. [Spring Initializr](https://start.spring.io/) |
-| Spring Boot | DESI **4.1.0** y base docente **4.1.2** empaquetaron con `.\mvnw.cmd -B -DskipTests package`. Para DAOS se propone **4.1.2** y el Wrapper del profesor, con Spring Web, Validation, Spring Data JPA, MySQL Connector/J, HATEOAS y springdoc. Queda pendiente el arranque integrado contra el esquema DAOS. [Spring Boot](https://docs.spring.io/spring-boot/reference/) |
+| Spring Boot | La base DAOS usa **4.1.2**, Maven Wrapper **3.10.0**, Spring Web MVC, Validation, HATEOAS y springdoc **3.2.0**. Spring Data JPA y MySQL Connector/J se agregan con la persistencia en la jornada 2. [Spring Boot](https://docs.spring.io/spring-boot/reference/) |
 | MySQL | Servidor **8.0.46** activo en el puerto **3306**. Falta validar la conexión de la aplicación al esquema DAOS. [Repaso de persistencia y MySQL](https://tuti.sied.utn.edu.ar/course/section.php?id=1092) |
 | Git y GitHub | Git **2.54.0** disponible. Se verificó la descarga del repositorio HogarYA y del ejemplo docente. [HogarYA](https://github.com/laggerpablojose/hogarya) |
 
@@ -42,7 +44,7 @@ Pactar un formato común de DTO, errores, filtros y enlaces antes de abrir ramas
 
 ## Reparto propuesto y criterios de aceptación
 
-Los nombres corresponden al grupo de DAOS de la Actividad 01. Cada persona se hace cargo de un módulo completo, desde la ruta HTTP hasta la persistencia y sus casos de prueba. El reparto se confirma entre los cuatro.
+Los nombres corresponden al grupo de DAOS de la Actividad 01. Pablo confirmó S03 el 22/11. El reparto de los demás módulos conserva la propuesta inicial y requiere acuerdo del grupo. Cada persona se hace cargo de un módulo completo, desde la ruta HTTP hasta la persistencia y sus casos de prueba.
 
 | Módulo y responsable propuesto | Operaciones obligatorias | Trabajo compartido |
 | --- | --- | --- |
@@ -58,15 +60,9 @@ Los nombres corresponden al grupo de DAOS de la Actividad 01. Cada persona se ha
 
 Revisar en conjunto los cambios simultáneos sobre una misma factura o incidente. Acordar cómo serializar emisión mensual, pago frente a anulación y resolución frente a cancelación o a otra resolución. Los enlaces de contrato necesitan una consulta auxiliar real, y el de informes debe llevar a la colección filtrada por el incidente. El alcance de desarrollo cubre los cuatro módulos y las consultas auxiliares que requieren sus flujos. Propiedades, publicaciones y la administración completa de contratos quedan como contexto de DESI.
 
-## Plan hasta el 20 de noviembre
+## Plan diario del 22 al 29 de noviembre
 
-| Fecha | Resultado verificable |
-| --- | --- |
-| **06–08/11** | Confirmar responsables y habilitar acceso al repositorio. Crear la base Maven de DAOS y comprobar importación en STS, arranque y conexión al esquema nuevo. Acordar DTO, filtros, errores, enlaces, modelo y responsabilidades cruzadas. |
-| **09–13/11** | Implementar los cuatro módulos en paralelo. Entregar PR revisable con una ruta principal funcional, datos de prueba y borrador de los seis casos por persona. Probar temprano los contratos S01–S02 y S03–S04. |
-| **14–17/11** | Integrar operaciones y completar filtros, validaciones, restricciones y enlaces. Revisar OpenAPI después del encuentro de documentación del 16/11. Ejecutar los 24 casos individuales. |
-| **18–19/11** | Probar desde un clon y esquema limpios. Ejecutar los dos recorridos integrados y comprobar ausencia de registros parciales ante rechazos. Corregir problemas de instalación, datos y contrato, y verificar el ZIP con STS. |
-| **20/11** | Cierre del grupo. Identificar la revisión de entrega en GitHub y entregar URL y ZIP en Moodle. |
+El [plan vigente](docs/PLAN.md) vincula cada jornada con un concepto de DAOS, código verificable y una PR. Comienza por la base REST y continúa con persistencia, alta, consultas, transiciones, integración con S04 y entrega.
 
 ## Pruebas y entrega
 
