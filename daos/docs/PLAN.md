@@ -23,6 +23,6 @@ El 28/11 depende de la disponibilidad del módulo S04 y de las consultas auxilia
 
 ## Estado comprobado
 
-- Jornada 1 implementada y verificada. `.\mvnw.cmd clean verify` terminó con dos pruebas exitosas. El JAR respondió HTTP 200 en la raíz y en sus enlaces OpenAPI y Swagger. Falta la revisión de la PR con Pablo para incorporar la base a integración.
+- Jornada 1 implementada y verificada. `.\mvnw.cmd clean verify` terminó con dos pruebas exitosas. El JAR respondió HTTP 200 en la raíz y en sus enlaces OpenAPI y Swagger. La [PR 12](https://github.com/laggerpablojose/hogarya/pull/12) está abierta para revisar con Pablo e incorporar la base a integración.
 - Jornadas 2 a 8 pendientes.
 - Recordatorios configurados en esta conversación para los horarios indicados. Convocan a la sesión diaria.

@@ -32,3 +32,5 @@ La comprobación inicial de Maven requirió permiso para acceder a la carpeta de
 La importación manual en STS queda como primer recorrido de Pablo con la guía del día. La comprobación ejecutada usó el mismo POM mediante Maven Wrapper.
 
 El siguiente incremento es la jornada 2 del 23/11. Se incorporarán entidades, repositorios y conexión MySQL antes de implementar el alta.
+
+Las ramas `daos/integrador-2026` y `daos/dia-01-base` se publicaron en GitHub. La [PR 12](https://github.com/laggerpablojose/hogarya/pull/12) apunta a integración y contiene la base de la primera jornada.
