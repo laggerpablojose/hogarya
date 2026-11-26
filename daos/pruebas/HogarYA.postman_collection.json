@@ -1,0 +1,1147 @@
+{
+  "item": [
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('facturaId', pm.response.json().id);"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas",
+            "description": "Se crea una mensual pendiente y se copia el importe contractual.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"contratoId\":1,\"periodo\":\"2026-12\"}"
+            }
+          },
+          "name": "S01-1 Emisión exitosa"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas/{{facturaId}}",
+            "description": "Devuelve la factura creada y enlaces self y contrato."
+          },
+          "name": "S01-2 Consulta por ID"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas?contratoId=1&estado=PENDIENTE",
+            "description": "Incluye la factura y el enlace self conserva ambos filtros."
+          },
+          "name": "S01-3 Listado filtrado"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas",
+            "description": "Error de formato, sin factura nueva.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"contratoId\":1,\"periodo\":\"2026-13\"}"
+            }
+          },
+          "name": "S01-4 Datos inválidos"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', function () { pm.response.to.have.status(404); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas",
+            "description": "El contrato relacionado no existe.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"contratoId\":999999,\"periodo\":\"2026-12\"}"
+            }
+          },
+          "name": "S01-5 Contrato inexistente"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', function () { pm.response.to.have.status(409); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas",
+            "description": "Se rechaza. Sólo queda una mensual activa para contrato y período.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"contratoId\":1,\"periodo\":\"2026-12\"}"
+            }
+          },
+          "name": "S01-6 Mensual duplicada"
+        }
+      ],
+      "name": "S01 Facturas",
+      "description": "Esquema de pruebas recién reiniciado. Contrato 1 activo, importe 450000 y vigencia 2026-2027. Ejecutar en orden."
+    },
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('pagoId', pm.response.json().id);"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos",
+            "description": "Crea el pago y cambia la factura a pagada en la misma transacción.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"facturaId\":{{facturaId}},\"medioPago\":\"EFECTIVO\",\"importePagado\":450000,\"interes\":0}"
+            }
+          },
+          "name": "S02-1 Pago exitoso"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos/{{pagoId}}",
+            "description": "Devuelve pago y enlace a factura."
+          },
+          "name": "S02-2 Consulta por ID"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos?facturaId={{facturaId}}",
+            "description": "Devuelve el único pago de esa factura."
+          },
+          "name": "S02-3 Listado filtrado"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos",
+            "description": "La validación de entrada rechaza el importe negativo.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"facturaId\":{{facturaId}},\"medioPago\":\"EFECTIVO\",\"importePagado\":-1,\"interes\":0}"
+            }
+          },
+          "name": "S02-4 Datos inválidos"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', function () { pm.response.to.have.status(404); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos",
+            "description": "Rechaza sin crear pago.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"facturaId\":999999,\"medioPago\":\"EFECTIVO\",\"importePagado\":450000,\"interes\":0}"
+            }
+          },
+          "name": "S02-5 Factura inexistente"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', function () { pm.response.to.have.status(409); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos",
+            "description": "La factura ya está pagada. Consultar que permanece un solo pago.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"facturaId\":{{facturaId}},\"medioPago\":\"EFECTIVO\",\"importePagado\":450000,\"interes\":0}"
+            }
+          },
+          "name": "S02-6 Pago duplicado"
+        }
+      ],
+      "name": "S02 Pagos",
+      "description": "Requiere S01. La factura capturada sigue pendiente, importe 450000. Ejecutar en orden."
+    },
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('incidenteId', pm.response.json().id);"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes",
+            "description": "Crea incidente abierto e historial inicial juntos.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"contratoId\":1,\"titulo\":\"Goteo\",\"descripcion\":\"Pérdida en cocina\",\"categoria\":\"PLOMERIA\",\"prioridad\":\"MEDIA\"}"
+            }
+          },
+          "name": "S03-1 Alta exitosa"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes/{{incidenteId}}",
+            "description": "Devuelve datos y enlaces self, contrato, informes e historial."
+          },
+          "name": "S03-2 Consulta por ID"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes?estado=ABIERTO&prioridad=MEDIA",
+            "description": "Incluye el incidente y conserva filtros en self."
+          },
+          "name": "S03-3 Listado filtrado"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes",
+            "description": "Título vacío. No crea incidente ni historial.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"contratoId\":1,\"titulo\":\"\",\"descripcion\":\"Goteo\",\"categoria\":\"GENERAL\",\"prioridad\":\"BAJA\"}"
+            }
+          },
+          "name": "S03-4 Datos inválidos"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', function () { pm.response.to.have.status(404); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes/999999",
+            "description": "Recurso ausente."
+          },
+          "name": "S03-5 Recurso inexistente"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', function () { pm.response.to.have.status(409); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes/{{incidenteId}}/estado",
+            "description": "Permanece abierto y con una sola entrada de historial. Resolver pertenece a S04.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"estado\":\"RESUELTO\"}"
+            }
+          },
+          "name": "S03-6 Transición prohibida"
+        }
+      ],
+      "name": "S03 Incidentes",
+      "description": "Contrato 1 vigente. La fecha y hora de alta las genera la aplicación. Ejecutar en orden."
+    },
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes/{{incidenteId}}/estado",
+            "description": "Se habilita la precondición de resolución.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"estado\":\"EN_PROCESO\"}"
+            }
+          },
+          "name": "Preparación iniciar atención"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('informeId', pm.response.json().id);"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion",
+            "description": "Informe, estado resuelto e historial se guardan juntos.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"incidenteId\":{{incidenteId}},\"descripcionTrabajo\":\"Cambio de junta\",\"costo\":0,\"responsable\":\"Técnico de prueba\"}"
+            }
+          },
+          "name": "S04-1 Resolución exitosa"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion/{{informeId}}",
+            "description": "Devuelve informe y enlace incidente."
+          },
+          "name": "S04-2 Consulta por ID"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion?incidenteId={{incidenteId}}",
+            "description": "Devuelve un informe."
+          },
+          "name": "S04-3 Listado filtrado"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion",
+            "description": "Rechaza antes de modificar datos.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"incidenteId\":{{incidenteId}},\"descripcionTrabajo\":\"\",\"costo\":-1,\"responsable\":\"\"}"
+            }
+          },
+          "name": "S04-4 Datos inválidos"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', function () { pm.response.to.have.status(404); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion/999999",
+            "description": "Recurso ausente."
+          },
+          "name": "S04-5 Recurso inexistente"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', function () { pm.response.to.have.status(409); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion",
+            "description": "Permanece resuelto, con un solo informe y tres entradas de historial.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"incidenteId\":{{incidenteId}},\"descripcionTrabajo\":\"Cambio de junta\",\"costo\":0,\"responsable\":\"Técnico de prueba\"}"
+            }
+          },
+          "name": "S04-6 Resolución duplicada"
+        }
+      ],
+      "name": "S04 Informes",
+      "description": "Requiere S03. El primer paso prepara el incidente en proceso antes de los seis casos."
+    },
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('facturaId', pm.response.json().id);"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas",
+            "description": "Alta mensual.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"contratoId\":1,\"periodo\":\"2027-01\"}"
+            }
+          },
+          "name": "Emitir"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('pagoId', pm.response.json().id);"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos",
+            "description": "Pago total.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"facturaId\":{{facturaId}},\"medioPago\":\"EFECTIVO\",\"importePagado\":450000,\"interes\":0}"
+            }
+          },
+          "name": "Pagar"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/facturas/{{facturaId}}",
+            "description": "Estado PAGADA y enlace pago."
+          },
+          "name": "Consultar factura pagada"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos/{{pagoId}}",
+            "description": "Debe coincidir con el recurso del enlace pago."
+          },
+          "name": "Consultar pago asociado"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', function () { pm.response.to.have.status(409); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/pagos",
+            "description": "Sólo queda un pago.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"facturaId\":{{facturaId}},\"medioPago\":\"EFECTIVO\",\"importePagado\":450000,\"interes\":0}"
+            }
+          },
+          "name": "Rechazar segundo pago"
+        }
+      ],
+      "name": "Integrado facturación y pago",
+      "description": "Período distinto al utilizado por S01. Seguir también el enlace pago de la factura."
+    },
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes/{{incidenteId}}/estado",
+            "description": "Se conserva el informe anterior.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"estado\":\"REABIERTO\"}"
+            }
+          },
+          "name": "Reabrir"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes/{{incidenteId}}/estado",
+            "description": "Nueva atención.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"estado\":\"EN_PROCESO\"}"
+            }
+          },
+          "name": "Retomar atención"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () { pm.response.to.have.status(201); });",
+                  "pm.collectionVariables.set('segundoInformeId', pm.response.json().id);"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion",
+            "description": "Nuevo informe independiente.",
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              },
+              "raw": "{\"incidenteId\":{{incidenteId}},\"descripcionTrabajo\":\"Cambio de junta\",\"costo\":0,\"responsable\":\"Técnico de prueba\"}"
+            }
+          },
+          "name": "Segunda resolución"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion?incidenteId={{incidenteId}}",
+            "description": "Dos informes."
+          },
+          "name": "Consultar ambos informes"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/incidentes/{{incidenteId}}/historial",
+            "description": "Seis entradas, cronológicas."
+          },
+          "name": "Consultar historial completo"
+        },
+        {
+          "event": [
+            {
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });"
+                ]
+              },
+              "listen": "test"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "value": "application/json",
+                "key": "Content-Type"
+              }
+            ],
+            "url": "{{baseUrl}}/informes-resolucion/{{informeId}}",
+            "description": "El primer informe sigue disponible."
+          },
+          "name": "Consultar primer informe conservado"
+        }
+      ],
+      "name": "Integrado mantenimiento",
+      "description": "Requiere S04. Reabre el mismo incidente y conserva su primer informe. Al finalizar se esperan dos informes y seis entradas de historial."
+    }
+  ],
+  "variable": [
+    {
+      "value": "http://localhost:8081",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "description": "24 casos individuales y dos recorridos integrados. Reiniciar el esquema de pruebas y ejecutar todas las carpetas en orden. Los IDs se capturan automáticamente.",
+    "name": "HogarYA DAOS Actividad 02",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  }
+}

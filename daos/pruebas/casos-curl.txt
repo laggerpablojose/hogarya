@@ -1,0 +1,189 @@
+# Casos reproducibles de HogarYA
+
+Preparación: iniciar la aplicación contra el esquema de pruebas, reiniciar sus registros con scripts/reiniciar-pruebas.sql y ejecutar en orden. Anotar los IDs devueltos por cada POST y reemplazar las variables {{facturaId}}, {{pagoId}}, {{incidenteId}} e {{informeId}}. El contrato 1 proviene de src/main/resources/data.sql. Fechas de ejemplo válidas para la entrega de noviembre de 2026.
+
+## S01 Facturas  Esquema de pruebas recién reiniciado. Contrato 1 activo, importe 450000 y vigencia 2026-2027. Ejecutar en orden.
+S01-1 Emisión exitosa
+Se crea una mensual pendiente y se copia el importe contractual.
+Esperado HTTP 201
+curl.exe -i -X POST "http://localhost:8081/facturas" -H "Content-Type: application/json" --data-raw '{"contratoId":1,"periodo":"2026-12"}'
+
+S01-2 Consulta por ID
+Devuelve la factura creada y enlaces self y contrato.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/facturas/{{facturaId}}"
+
+S01-3 Listado filtrado
+Incluye la factura y el enlace self conserva ambos filtros.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/facturas?contratoId=1&estado=PENDIENTE"
+
+S01-4 Datos inválidos
+Error de formato, sin factura nueva.
+Esperado HTTP 400
+curl.exe -i -X POST "http://localhost:8081/facturas" -H "Content-Type: application/json" --data-raw '{"contratoId":1,"periodo":"2026-13"}'
+
+S01-5 Contrato inexistente
+El contrato relacionado no existe.
+Esperado HTTP 404
+curl.exe -i -X POST "http://localhost:8081/facturas" -H "Content-Type: application/json" --data-raw '{"contratoId":999999,"periodo":"2026-12"}'
+
+S01-6 Mensual duplicada
+Se rechaza. Sólo queda una mensual activa para contrato y período.
+Esperado HTTP 409
+curl.exe -i -X POST "http://localhost:8081/facturas" -H "Content-Type: application/json" --data-raw '{"contratoId":1,"periodo":"2026-12"}'
+
+## S02 Pagos  Requiere S01. La factura capturada sigue pendiente, importe 450000. Ejecutar en orden.
+S02-1 Pago exitoso
+Crea el pago y cambia la factura a pagada en la misma transacción.
+Esperado HTTP 201
+curl.exe -i -X POST "http://localhost:8081/pagos" -H "Content-Type: application/json" --data-raw '{"facturaId":{{facturaId}},"medioPago":"EFECTIVO","importePagado":450000,"interes":0}'
+
+S02-2 Consulta por ID
+Devuelve pago y enlace a factura.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/pagos/{{pagoId}}"
+
+S02-3 Listado filtrado
+Devuelve el único pago de esa factura.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/pagos?facturaId={{facturaId}}"
+
+S02-4 Datos inválidos
+La validación de entrada rechaza el importe negativo.
+Esperado HTTP 400
+curl.exe -i -X POST "http://localhost:8081/pagos" -H "Content-Type: application/json" --data-raw '{"facturaId":{{facturaId}},"medioPago":"EFECTIVO","importePagado":-1,"interes":0}'
+
+S02-5 Factura inexistente
+Rechaza sin crear pago.
+Esperado HTTP 404
+curl.exe -i -X POST "http://localhost:8081/pagos" -H "Content-Type: application/json" --data-raw '{"facturaId":999999,"medioPago":"EFECTIVO","importePagado":450000,"interes":0}'
+
+S02-6 Pago duplicado
+La factura ya está pagada. Consultar que permanece un solo pago.
+Esperado HTTP 409
+curl.exe -i -X POST "http://localhost:8081/pagos" -H "Content-Type: application/json" --data-raw '{"facturaId":{{facturaId}},"medioPago":"EFECTIVO","importePagado":450000,"interes":0}'
+
+## S03 Incidentes  Contrato 1 vigente. La fecha y hora de alta las genera la aplicación. Ejecutar en orden.
+S03-1 Alta exitosa
+Crea incidente abierto e historial inicial juntos.
+Esperado HTTP 201
+curl.exe -i -X POST "http://localhost:8081/incidentes" -H "Content-Type: application/json" --data-raw '{"contratoId":1,"titulo":"Goteo","descripcion":"Pérdida en cocina","categoria":"PLOMERIA","prioridad":"MEDIA"}'
+
+S03-2 Consulta por ID
+Devuelve datos y enlaces self, contrato, informes e historial.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/incidentes/{{incidenteId}}"
+
+S03-3 Listado filtrado
+Incluye el incidente y conserva filtros en self.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/incidentes?estado=ABIERTO&prioridad=MEDIA"
+
+S03-4 Datos inválidos
+Título vacío. No crea incidente ni historial.
+Esperado HTTP 400
+curl.exe -i -X POST "http://localhost:8081/incidentes" -H "Content-Type: application/json" --data-raw '{"contratoId":1,"titulo":"","descripcion":"Goteo","categoria":"GENERAL","prioridad":"BAJA"}'
+
+S03-5 Recurso inexistente
+Recurso ausente.
+Esperado HTTP 404
+curl.exe -i -X GET "http://localhost:8081/incidentes/999999"
+
+S03-6 Transición prohibida
+Permanece abierto y con una sola entrada de historial. Resolver pertenece a S04.
+Esperado HTTP 409
+curl.exe -i -X PATCH "http://localhost:8081/incidentes/{{incidenteId}}/estado" -H "Content-Type: application/json" --data-raw '{"estado":"RESUELTO"}'
+
+## S04 Informes  Requiere S03. El primer paso prepara el incidente en proceso antes de los seis casos.
+Preparación iniciar atención
+Se habilita la precondición de resolución.
+Esperado HTTP 200
+curl.exe -i -X PATCH "http://localhost:8081/incidentes/{{incidenteId}}/estado" -H "Content-Type: application/json" --data-raw '{"estado":"EN_PROCESO"}'
+
+S04-1 Resolución exitosa
+Informe, estado resuelto e historial se guardan juntos.
+Esperado HTTP 201
+curl.exe -i -X POST "http://localhost:8081/informes-resolucion" -H "Content-Type: application/json" --data-raw '{"incidenteId":{{incidenteId}},"descripcionTrabajo":"Cambio de junta","costo":0,"responsable":"Técnico de prueba"}'
+
+S04-2 Consulta por ID
+Devuelve informe y enlace incidente.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/informes-resolucion/{{informeId}}"
+
+S04-3 Listado filtrado
+Devuelve un informe.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/informes-resolucion?incidenteId={{incidenteId}}"
+
+S04-4 Datos inválidos
+Rechaza antes de modificar datos.
+Esperado HTTP 400
+curl.exe -i -X POST "http://localhost:8081/informes-resolucion" -H "Content-Type: application/json" --data-raw '{"incidenteId":{{incidenteId}},"descripcionTrabajo":"","costo":-1,"responsable":""}'
+
+S04-5 Recurso inexistente
+Recurso ausente.
+Esperado HTTP 404
+curl.exe -i -X GET "http://localhost:8081/informes-resolucion/999999"
+
+S04-6 Resolución duplicada
+Permanece resuelto, con un solo informe y tres entradas de historial.
+Esperado HTTP 409
+curl.exe -i -X POST "http://localhost:8081/informes-resolucion" -H "Content-Type: application/json" --data-raw '{"incidenteId":{{incidenteId}},"descripcionTrabajo":"Cambio de junta","costo":0,"responsable":"Técnico de prueba"}'
+
+## Integrado facturación y pago  Período distinto al utilizado por S01. Seguir también el enlace pago de la factura.
+Emitir
+Alta mensual.
+Esperado HTTP 201
+curl.exe -i -X POST "http://localhost:8081/facturas" -H "Content-Type: application/json" --data-raw '{"contratoId":1,"periodo":"2027-01"}'
+
+Pagar
+Pago total.
+Esperado HTTP 201
+curl.exe -i -X POST "http://localhost:8081/pagos" -H "Content-Type: application/json" --data-raw '{"facturaId":{{facturaId}},"medioPago":"EFECTIVO","importePagado":450000,"interes":0}'
+
+Consultar factura pagada
+Estado PAGADA y enlace pago.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/facturas/{{facturaId}}"
+
+Consultar pago asociado
+Debe coincidir con el recurso del enlace pago.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/pagos/{{pagoId}}"
+
+Rechazar segundo pago
+Sólo queda un pago.
+Esperado HTTP 409
+curl.exe -i -X POST "http://localhost:8081/pagos" -H "Content-Type: application/json" --data-raw '{"facturaId":{{facturaId}},"medioPago":"EFECTIVO","importePagado":450000,"interes":0}'
+
+## Integrado mantenimiento  Requiere S04. Reabre el mismo incidente y conserva su primer informe. Al finalizar se esperan dos informes y seis entradas de historial.
+Reabrir
+Se conserva el informe anterior.
+Esperado HTTP 200
+curl.exe -i -X PATCH "http://localhost:8081/incidentes/{{incidenteId}}/estado" -H "Content-Type: application/json" --data-raw '{"estado":"REABIERTO"}'
+
+Retomar atención
+Nueva atención.
+Esperado HTTP 200
+curl.exe -i -X PATCH "http://localhost:8081/incidentes/{{incidenteId}}/estado" -H "Content-Type: application/json" --data-raw '{"estado":"EN_PROCESO"}'
+
+Segunda resolución
+Nuevo informe independiente.
+Esperado HTTP 201
+curl.exe -i -X POST "http://localhost:8081/informes-resolucion" -H "Content-Type: application/json" --data-raw '{"incidenteId":{{incidenteId}},"descripcionTrabajo":"Cambio de junta","costo":0,"responsable":"Técnico de prueba"}'
+
+Consultar ambos informes
+Dos informes.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/informes-resolucion?incidenteId={{incidenteId}}"
+
+Consultar historial completo
+Seis entradas, cronológicas.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/incidentes/{{incidenteId}}/historial"
+
+Consultar primer informe conservado
+El primer informe sigue disponible.
+Esperado HTTP 200
+curl.exe -i -X GET "http://localhost:8081/informes-resolucion/{{informeId}}"
