@@ -1,0 +1,41 @@
+S01-1 Emisión exitosa — HTTP 201 OK
+S01-2 Consulta por ID — HTTP 200 OK
+S01-3 Listado filtrado — HTTP 200 OK
+S01-4 Datos inválidos — HTTP 400 OK
+S01-5 Contrato inexistente — HTTP 404 OK
+S01-6 Mensual duplicada — HTTP 409 OK
+S02-1 Pago exitoso — HTTP 201 OK
+S02-2 Consulta por ID — HTTP 200 OK
+S02-3 Listado filtrado — HTTP 200 OK
+S02-4 Datos inválidos — HTTP 400 OK
+S02-5 Factura inexistente — HTTP 404 OK
+S02-6 Pago duplicado — HTTP 409 OK
+S03-1 Alta exitosa — HTTP 201 OK
+S03-2 Consulta por ID — HTTP 200 OK
+S03-3 Listado filtrado — HTTP 200 OK
+S03-4 Datos inválidos — HTTP 400 OK
+S03-5 Recurso inexistente — HTTP 404 OK
+S03-6 Transición prohibida — HTTP 409 OK
+Preparación iniciar atención — HTTP 200 OK
+S04-1 Resolución exitosa — HTTP 201 OK
+S04-2 Consulta por ID — HTTP 200 OK
+S04-3 Listado filtrado — HTTP 200 OK
+S04-4 Datos inválidos — HTTP 400 OK
+S04-5 Recurso inexistente — HTTP 404 OK
+S04-6 Resolución duplicada — HTTP 409 OK
+Emitir — HTTP 201 OK
+Pagar — HTTP 201 OK
+Consultar factura pagada — HTTP 200 OK
+Consultar pago asociado — HTTP 200 OK
+Rechazar segundo pago — HTTP 409 OK
+Reabrir — HTTP 200 OK
+Retomar atención — HTTP 200 OK
+Segunda resolución — HTTP 201 OK
+Consultar ambos informes — HTTP 200 OK
+Consultar historial completo — HTTP 200 OK
+Consultar primer informe conservado — HTTP 200 OK
+/ — HTTP 200 OK
+/v3/api-docs — HTTP 200 OK
+/swagger-ui/index.html — HTTP 200 OK
+MySQL final — 2 facturas, 2 pagos, 1 incidente, 6 entradas de historial, 2 informes. OK
+Maven clean verify — 38 pruebas, 0 fallos, 0 errores, 0 omitidas. BUILD SUCCESS.
